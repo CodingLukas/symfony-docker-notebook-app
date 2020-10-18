@@ -1,3 +1,19 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+user_phone_list:
+  path: /api/user/phone
+  controller: App\Controller\PhoneController:indexAction
+  methods: [GET]
+
+user_phone_create:
+  path: /api/user/phone
+  controller: App\Controller\PhoneController:createAction
+  methods: [POST]
+
+user_phone_delete:
+  path: /api/user/phone
+  controller: App\Controller\PhoneController:deleteAction
+  methods: [DELETE]
+
+user_phone_update:
+  path: /api/user/phone
+  controller: App\Controller\PhoneController:updateAction
+  methods: [PATCH]
