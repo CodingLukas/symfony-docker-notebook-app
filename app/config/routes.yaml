@@ -1,19 +1,34 @@
 user_phone_list:
   path: /api/user/phone
   controller: App\Controller\PhoneController:indexAction
-  methods: [GET]
+  methods: [ GET ]
 
 user_phone_create:
   path: /api/user/phone
   controller: App\Controller\PhoneController:createAction
-  methods: [POST]
+  methods: [ POST ]
 
 user_phone_delete:
   path: /api/user/phone
   controller: App\Controller\PhoneController:deleteAction
-  methods: [DELETE]
+  methods: [ DELETE ]
 
 user_phone_update:
   path: /api/user/phone
   controller: App\Controller\PhoneController:updateAction
-  methods: [PATCH]
+  methods: [ PATCH ]
+
+user_phone_share:
+  path: /api/user/phone/share
+  controller: App\Controller\SharedPhoneController:shareAction
+  methods: [ POST ]
+
+user_phone_share_cancel:
+  path: /api/user/phone/share
+  controller: App\Controller\SharedPhoneController:shareCancelAction
+  methods: [ DELETE ]
+
+user_phone_share_list:
+  path: /api/user/phone/share
+  controller: App\Controller\SharedPhoneController:shareIndexAction
+  methods: [ GET ]
