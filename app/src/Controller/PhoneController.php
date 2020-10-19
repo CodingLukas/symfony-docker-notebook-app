@@ -4,7 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Phone;
 use App\Form\Type\PhoneType;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Repository\PhoneRepository;
+use App\Repository\SharePhoneRepository;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -16,28 +17,27 @@ use Symfony\Component\HttpFoundation\Response;
 class PhoneController extends AbstractApiController
 {
 
-    public function indexAction()
+    public function indexAction(PhoneRepository $phoneRepository, SharePhoneRepository $sharePhoneRepository)
     {
-        $phones = $this->getDoctrine()->getRepository(Phone::class)->findBy(['user' => $this->getUser()]);
-
-        if (!$phones) {
-            throw new NotFoundHttpException('Phone book is empty');
-        }
+        $phones = $phoneRepository->findAllByUser($this->getUser());
+        $sharedPhones = $sharePhoneRepository->findAllByUser($this->getUser());
 
         $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
 
         $jsonContent = $serializer->normalize($phones, 'json', [AbstractNormalizer::ATTRIBUTES => ['id', 'name', 'number']]);
+        $jsonContent2 = $serializer->normalize($sharedPhones, 'json',
+            [AbstractNormalizer::ATTRIBUTES => ['id', 'from_user', 'to_user', 'phone' => ['id', 'name', 'number']]]);
 
         $data = [
             'phone_book' => $jsonContent,
+            'shared_phones' => $jsonContent2
         ];
 
         return $this->respond($data);
     }
 
-    public function createAction(Request $request): Response
+    public function createAction(Request $request, PhoneRepository $phoneRepository): Response
     {
-
         $form = $this->buildForm(PhoneType::class);
 
         $form->handleRequest($request);
@@ -50,13 +50,12 @@ class PhoneController extends AbstractApiController
         $phone = $form->getData();
         $phone->setUser($this->getUser());
 
-        $this->getDoctrine()->getManager()->persist($phone);
-        $this->getDoctrine()->getManager()->flush();
+        $phoneRepository->create($phone);
 
         return $this->respond($phone);
     }
 
-    public function deleteAction(Request $request): Response
+    public function deleteAction(Request $request, PhoneRepository $phoneRepository): Response
     {
         $phoneId = $request->get('id');
 
@@ -64,22 +63,23 @@ class PhoneController extends AbstractApiController
             return $this->respond(['message' => 'id parameter is not provided'], Response::HTTP_BAD_REQUEST);
         }
 
-        $phone = $this->getDoctrine()->getRepository(Phone::class)->findOneBy([
+        $data = [
             'user' => $this->getUser(),
             'id' => $phoneId,
-        ]);
+        ];
+
+        $phone = $phoneRepository->findOneByData($data);
 
         if (!$phone) {
             return $this->respond(['message' => 'Phone not found'], Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->remove($phone);
-        $this->getDoctrine()->getManager()->flush();
+        $phoneRepository->delete($phone);
 
-        return $this->respond([null]);
+        return $this->respond([]);
     }
 
-    public function updateAction(Request $request): Response
+    public function updateAction(Request $request, PhoneRepository $phoneRepository): Response
     {
         $phoneId = $request->get('id');
 
@@ -87,10 +87,12 @@ class PhoneController extends AbstractApiController
             return $this->respond(['message' => 'id parameter is not provided'], Response::HTTP_BAD_REQUEST);
         }
 
-        $phone = $this->getDoctrine()->getRepository(Phone::class)->findOneBy([
+        $data = [
             'user' => $this->getUser(),
             'id' => $phoneId,
-        ]);
+        ];
+
+        $phone = $phoneRepository->findOneByData($data);
 
         if (!$phone) {
             return $this->respond(['message' => 'Phone not found'], Response::HTTP_BAD_REQUEST);
@@ -109,10 +111,17 @@ class PhoneController extends AbstractApiController
         /** @var Phone $phone */
         $phone = $form->getData();
 
-        $this->getDoctrine()->getManager()->persist($phone);
-        $this->getDoctrine()->getManager()->flush();
+        $phoneRepository->update($phone);
 
-        return $this->respond($phone);
+        $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+
+        $jsonContent = $serializer->normalize($phone, 'json', [AbstractNormalizer::ATTRIBUTES => ['id', 'name', 'number']]);
+
+        $data = [
+            'phone' => $jsonContent,
+        ];
+
+        return $this->respond($data);
     }
 
 }
