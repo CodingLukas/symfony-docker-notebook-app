@@ -3,22 +3,24 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractApiController extends AbstractController
 {
-    protected function buildForm(string $type, $data = null, array $options = []): FormInterface
-    {
-        $options = array_merge($options, [
-            'csrf_protection' => false,
-        ]);
 
-        return $this->container->get('form.factory')->createNamed('', $type, $data, $options);
-    }
-
-    protected function respond($data, int $statusCode = Response::HTTP_OK): Response
+    protected function respond($data): Response
     {
-        return $this->json($data, $statusCode);
+        $statusCode = $data['status'];
+        $object = [];
+
+        if (isset($data[0])) {
+            $object = $data[0];
+        }
+
+        if (isset($data['message'])) {
+            $object = ['message' =>  $data['message']];
+        }
+
+        return $this->json($object, $statusCode);
     }
 }
