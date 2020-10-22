@@ -26,6 +26,11 @@
         "symfony/yaml": "5.1.*"
     },
     "require-dev": {
+        "ext-json": "*",
+        "doctrine/doctrine-fixtures-bundle": "^3.3",
+        "mockery/mockery": "^1.4",
+        "symfony/browser-kit": "5.1.*",
+        "symfony/phpunit-bridge": "^5.1"
     },
     "config": {
         "optimize-autoloader": true,
