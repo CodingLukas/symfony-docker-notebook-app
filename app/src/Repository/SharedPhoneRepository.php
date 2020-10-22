@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\SharedPhone;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 
 class SharedPhoneRepository extends ServiceEntityRepository
@@ -16,20 +17,38 @@ class SharedPhoneRepository extends ServiceEntityRepository
 
     public function create($sharedPhone)
     {
-        $this->_em->persist($sharedPhone);
-        $this->_em->flush();
+        try {
+            $this->_em->persist($sharedPhone);
+            $this->_em->flush();
+        } catch (ORMException $e) {
+            return false;
+        }
+
+        return true;
     }
 
     public function delete($sharedPhone)
     {
-        $this->_em->remove($sharedPhone);
-        $this->_em->flush();
+        try {
+            $this->_em->remove($sharedPhone);
+            $this->_em->flush();
+        } catch (ORMException $e) {
+            return false;
+        }
+
+        return true;
     }
 
     public function update($sharedPhone)
     {
-        $this->_em->persist($sharedPhone);
-        $this->_em->flush();
+        try {
+            $this->_em->persist($sharedPhone);
+            $this->_em->flush();
+        } catch (ORMException $e) {
+            return false;
+        }
+
+        return true;
     }
 
     public function findAllByUser($user)
@@ -41,6 +60,4 @@ class SharedPhoneRepository extends ServiceEntityRepository
     {
         return $this->findOneBy($data);
     }
-
-
 }
